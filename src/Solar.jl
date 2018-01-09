@@ -1,5 +1,12 @@
+"
+	Solar
+
+Defines type: panel, includes various methods for solar flux calculation.
+
+"
 module Solar
 
-# package code goes here
+include("panels.jl")
+include("flux.jl")
 
 end # module

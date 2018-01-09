@@ -1,5 +1,8 @@
 using Solar
 using Base.Test
 
-# write your own tests here
-@test 1 == 2
+tests = ["paneltests", "windtests"]
+
+for t in tests
+	include("$(t).jl")
+end
