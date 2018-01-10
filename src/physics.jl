@@ -1,7 +1,7 @@
-include("paneltypes.jl")
+include("paneltypes.jl") #TODO, is there a better way to include the panelphysics type in this file?
 
 """
-energysimple()
+	energysimple(sunshine, trajectory, solarpanels)
 """
 function solarcapturesimple(sunshine, trajectory, solarpanels)
 
@@ -61,8 +61,6 @@ function solarcapturesimple(sunshine, trajectory, solarpanels)
 		end #for number of panels
 	end #for all sunshine.time
 
-	panelphysics = panelphysics(panelflux,panelpower,panelenergy)
-
-	return panelphysics
+	return panelphysics(panelflux,panelpower,panelenergy)
 
 end #solarcapturesimple()
