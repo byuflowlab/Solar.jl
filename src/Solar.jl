@@ -6,7 +6,7 @@ Defines type: panel, includes various methods for solar flux calculation.
 "
 module Solar
 
-include("panels.jl")
-include("flux.jl")
+include("solartypes.jl")
+include("physics.jl")
 
 end # module
