@@ -1,4 +1,5 @@
-#Define panelgeometry Type
+# ----- Solar Panel Types ----- #
+# Define panelgeometry Type
 struct panelgeometry
 	normal::Array{Float32,1}(3)
 	chord::Float32
@@ -43,3 +44,12 @@ struct panelphysics
 	power::Array{Float32,2}
 	energy::Array{Float32,2}
 end #energy type
+
+# ----- Sunshine Types ----- #
+# Define sunshine Type
+struct sunshine
+	time::Array{Float32,1}
+	azimuth::Array{Float32,1}
+	zenith::Array{Float32,1}
+	flux::Array{Float32,1}
+end
