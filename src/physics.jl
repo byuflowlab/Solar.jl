@@ -5,8 +5,11 @@ include("paneltypes.jl") #TODO, is there a better way to include the panelphysic
 """
 function solarcapturesimple(sunshine, trajectory, solarpanels)
 
+	#initialize
 	timestep = sunshine.time[2]-sunshine.time[1]
-	panelenergy =
+	panelflux = Array{Float32,2}(length(solarpanels),length(sunshine.time))
+	panelpower = Array{Float32,2}(length(solarpanels),length(sunshine.time))
+	panelenergy = Array{Float32,2}(length(solarpanels),length(sunshine.time))
 
 	for i=1:length(sunshine.time)
 		# --- Get Normalized Solar Vector --- #
@@ -50,7 +53,7 @@ function solarcapturesimple(sunshine, trajectory, solarpanels)
 			end
 
 			# --- Adjust Interpolated Flux by Obliquity Factor --- #
-			panelflux[j,i] = flux[sunshine.time[i]].*mu
+			panelflux[j,i] = sunshine.flux[sunshine.time[i]].*mu
 
 			# --- Calculate panel Power --- #
 			panelpower[j,i] = PAR[:etasolar]*solarpanel.area[j]*energy.flux[j,i]
