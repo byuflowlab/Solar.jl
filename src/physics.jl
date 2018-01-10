@@ -1,5 +1,3 @@
-include("paneltypes.jl") #TODO, is there a better way to include the panelphysics type in this file?
-
 """
 	energysimple(sunshine, trajectory, solarpanels)
 """
