@@ -1,5 +1,7 @@
 """
-	energysimple(sunshine, trajectory, solarpanels)
+	solarcapturesimple(sunshine, trajectory, solarpanels)
+
+Calculate the Flux, Power, and Total Energy for all input panels for all input time.
 """
 function solarcapturesimple(sunshine, trajectory, solarpanels)
 
@@ -10,6 +12,7 @@ function solarcapturesimple(sunshine, trajectory, solarpanels)
 	paneltotalenergy = Array{Float32,2}(length(solarpanels),length(sunshine.time))
 
 	for i=1:length(sunshine.time)
+
 		# --- Get Normalized Solar Vector --- #
 		A = (-sunshine.azimuth[sunshine.time[i]] + 90.0)*pi/180.0 #Correct azimuth angle orientation (x-axis = 0 , positive counter-clockwise)
 		Z = (sunshine.zenith[sunshine.time[i]])*pi/180.0
@@ -19,10 +22,13 @@ function solarcapturesimple(sunshine, trajectory, solarpanels)
 		v = sin(A).*sin(Z)
 		w = cos(Z)
 
-		sun_vector = [u,v,w]
+		sunvector = [u,v,w]
+		# ---
 
 		for j=1:length(solarpanels)
+
 			# --- Adjust panel normal by aircraft orientation --- #
+			# complete trig calculations for brevity
 			cphi = cos(-trajectory.phi[i])
 			cth = cos(-trajectory.theta[i])
 			cpsi = cos(trajectory.psi[i])
@@ -37,26 +43,17 @@ function solarcapturesimple(sunshine, trajectory, solarpanels)
 
 			panelnormal = R*solarpanels.normal[j]
 
-			#TODO take care of this outside to definition of panels. don't assume symmetric in this function.
-			# if k==2
-			# 	mirrorplanenormal = [0.0,1.0,0.0] #mirror about the xz plane
-			# 	panelnormal = panelnormal - 2*(dot(panelnormal,mirrorplanenormal))*mirrorplanenormal
-			# end #if other side
-
 			# --- Get obliquity factor (0-1) --- #
-			mu = sum(sun_vector.*panelnormal)
-			# for sections facing away from sun, set mu to zero
+			mu = sum(sunvector.*panelnormal)
 			if mu < 0.0
 				mu = 0.0
 			end
 
-			# --- Adjust Interpolated Flux by Obliquity Factor --- #
+			# --- Calculate Flux, Power, and Total Energy --- #
 			panelflux[j,i] = sunshine.flux[sunshine.time[i]].*mu
 
-			# --- Calculate panel Power --- #
 			panelpower[j,i] = PAR[:etasolar]*solarpanel.area[j]*energy.flux[j,i]
 
-			# --- Calculate panel Energy --- #
 			paneltotalenergy[j,i] = panelpower[j,i]*timestep
 
 		end #for number of panels
