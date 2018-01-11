@@ -7,7 +7,7 @@ function solarcapturesimple(sunshine, trajectory, solarpanels)
 	timestep = sunshine.time[2]-sunshine.time[1]
 	panelflux = Array{Float32,2}(length(solarpanels),length(sunshine.time))
 	panelpower = Array{Float32,2}(length(solarpanels),length(sunshine.time))
-	panelenergy = Array{Float32,2}(length(solarpanels),length(sunshine.time))
+	paneltotalenergy = Array{Float32,2}(length(solarpanels),length(sunshine.time))
 
 	for i=1:length(sunshine.time)
 		# --- Get Normalized Solar Vector --- #
@@ -57,11 +57,11 @@ function solarcapturesimple(sunshine, trajectory, solarpanels)
 			panelpower[j,i] = PAR[:etasolar]*solarpanel.area[j]*energy.flux[j,i]
 
 			# --- Calculate panel Energy --- #
-			panelenergy[j,i] = panelpower[j,i]*timestep
+			paneltotalenergy[j,i] = panelpower[j,i]*timestep
 
 		end #for number of panels
 	end #for all sunshine.time
 
-	return panelphysics(panelflux,panelpower,panelenergy)
+	return panelenergy(panelflux,panelpower,paneltotalenergy)
 
 end #solarcapturesimple()
