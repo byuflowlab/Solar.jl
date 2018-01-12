@@ -2,7 +2,7 @@
 "
 	panelgeometry
 
-Describe the geometry of a solar panel array.
+Describe the geometry/orientation of a solar panel array.
 "
 struct panelgeometry
 	normal::Array{Float32,1}(3)
@@ -17,7 +17,7 @@ end
 """
 	panelgeometryautodef(;chord = 1.0, span = 1.0, roll = 0.0, pitch = 0.0, yaw = 0.0))
 
-Define the panelgeometry immutable type, filling in the area and normal fields for the user from required inputs.
+Define the panelgeometry immutable type; calculate and fill in the area and normal fields from the required inputs for the user.
 
 See documentation for the panelgeometry immutable type for information on inputs.
 """
@@ -53,9 +53,9 @@ struct panelparameters
 end #panelphysicsin
 
 "
-	panelphysicsout
+	panelenergy
 
-Define flux, power, and energy arrays for a solar panel network.
+Define flux, power, and total energy arrays for a solar panel network.
 "
 struct panelenergy
 	flux::Array{Float32,2}
