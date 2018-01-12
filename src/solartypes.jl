@@ -48,6 +48,10 @@ function panelgeometryautodef( #TODO find dimensions of single solar cell and pu
 
 end
 
+"""
+	panelparameters
+
+"""
 struct panelparameters
 	#TODO talk to Nathaniel about what needs to go in here as far as the power stuff is concerned
 end #panelphysicsin
@@ -66,7 +70,7 @@ end #panelphysicsout
 # ----- Sunshine Types ----- #
 """
 	sunshine
-	
+
 Define time, sun angles (azimuth, zenith), and solar flux arrays.
 """
 struct sunshine
