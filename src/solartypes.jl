@@ -64,7 +64,11 @@ struct panelenergy
 end #panelphysicsout
 
 # ----- Sunshine Types ----- #
-# Define sunshine Type
+"""
+	sunshine
+	
+Define time, sun angles (azimuth, zenith), and solar flux arrays.
+"""
 struct sunshine
 	time::Array{Float32,1}
 	azimuth::Array{Float32,1}
