@@ -56,11 +56,11 @@ struct panelparameters
 	#TODO talk to Nathaniel about what needs to go in here as far as the power stuff is concerned
 end #panelphysicsin
 
-"
+"""
 	panelenergy
 
 Define flux, power, and total energy arrays for a solar panel network.
-"
+"""
 struct panelenergy
 	flux::Array{Float32,2}
 	power::Array{Float32,2}
