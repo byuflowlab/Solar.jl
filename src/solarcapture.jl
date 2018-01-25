@@ -1,21 +1,22 @@
 """
-	solarcapturesimple(sunshine, trajectory, solarpanels)
+    solarcapturesimple(solardata::sunshine, trajectory::aircrafttrajectory,
+	  solarpanels::panelgeometry,etasolar::Float64)
 
-Calculate the Flux, Power, and Total Energy for all input panels for all input time.
+Calculate the flux, power, and total energy for all input panels for all input time.
 """
-function solarcapturesimple(sunshine, trajectory, solarpanels)
+function solarcapturesimple(solardata::sunshine,trajectory::aircrafttrajectory,
+	solarpanels::Array{panelgeometry,1},etasolar::Float64)
 
 	#initialize
-	timestep = sunshine.time[2]-sunshine.time[1]
-	panelflux = Array{Float32,2}(length(solarpanels),length(sunshine.time))
-	panelpower = Array{Float32,2}(length(solarpanels),length(sunshine.time))
-	paneltotalenergy = Array{Float32,2}(length(solarpanels),length(sunshine.time))
+	panelflux = Array{Float64,2}(length(solarpanels),length(solardata.time))
+	panelpower = Array{Float64,2}(length(solarpanels),length(solardata.time))
+	paneltotalenergy = Array{Float64,2}(length(solarpanels),length(solardata.time))
 
-	for i=1:length(sunshine.time)
+	for i=1:length(solardata.time)-1
 
 		# --- Get Normalized Solar Vector --- #
-		A = (-sunshine.azimuth[sunshine.time[i]] + 90.0)*pi/180.0 #Correct azimuth angle orientation (x-axis = 0 , positive counter-clockwise)
-		Z = (sunshine.zenith[sunshine.time[i]])*pi/180.0
+		A = -solardata.azimuth[i] + 90.0*pi/180.0 #Correct azimuth angle orientation (x-axis = 0 , positive counter-clockwise)
+		Z = solardata.zenith[i]
 
 		# Convert sun angles to vector
 		u = cos(A).*sin(Z)
@@ -29,19 +30,19 @@ function solarcapturesimple(sunshine, trajectory, solarpanels)
 
 			# --- Adjust panel normal by aircraft orientation --- #
 			# complete trig calculations for brevity
-			cphi = cos(-trajectory.phi[i])
-			cth = cos(-trajectory.theta[i])
-			cpsi = cos(trajectory.psi[i])
-			sphi = sin(-trajectory.phi[i])
-			sth = sin(-trajectory.theta[i])
-			spsi = sin(trajectory.psi[i])
+			cphi = cos(-trajectory.roll[i])
+			cth = cos(-trajectory.pitch[i])
+			cpsi = cos(trajectory.yaw[i])
+			sphi = sin(-trajectory.roll[i])
+			sth = sin(-trajectory.pitch[i])
+			spsi = sin(trajectory.yaw[i])
 
 			# 3D Rotation Matrix
-			R = [cth*cpsi, -cphi*spsi+sphi*sth*cpsi,  sphi*spsi+cphi*sth*cpsi;
-				 cth*spsi,  cphi*cpsi+sphi*sth*spsi, -sphi*cpsi+cphi*sth*spsi;
-				-sth, 	    sphi*cth, 				 cphi*cth]
+			R = [cth*cpsi -cphi*spsi+sphi*sth*cpsi   sphi*spsi+cphi*sth*cpsi;
+				   cth*spsi  cphi*cpsi+sphi*sth*spsi  -sphi*cpsi+cphi*sth*spsi;
+				  -sth 	     sphi*cth 				         cphi*cth               ]
 
-			panelnormal = R*solarpanels.normal[j]
+			panelnormal = R*solarpanels[j].normal
 
 			# --- Get obliquity factor (0-1) --- #
 			mu = sum(sunvector.*panelnormal)
@@ -50,37 +51,46 @@ function solarcapturesimple(sunshine, trajectory, solarpanels)
 			end
 
 			# --- Calculate Flux, Power, and Total Energy --- #
-			panelflux[j,i] = sunshine.flux[sunshine.time[i]].*mu
+			panelflux[j,i] = solardata.flux[i].*mu
 
-			panelpower[j,i] = PAR[:etasolar]*solarpanel.area[j]*energy.flux[j,i]
+			panelpower[j,i] = etasolar*solarpanels[j].area*panelflux[j,i]
 
-			paneltotalenergy[j,i] = panelpower[j,i]*timestep
+			paneltotalenergy[j,i] = panelpower[j,i]*(solardata.time[i+1]-solardata.time[i])
 
 		end #for number of panels
-	end #for all sunshine.time
+	end #for all solardata.time
 
 	return panelenergy(panelflux,panelpower,paneltotalenergy)
 
 end #solarcapturesimple()
 
 """
-    getsolardata(file::String)
-Reads SMARTS data from a file and stores the data as a global sunshine type
-named SMARTSdata.
+    getsunshine(file::String)
+Reads SMARTS data from a file and returns a solardata struct
 """
-function getsolardata(file::String)
+function getsunshine(file::String)
   if isfile(file)
-    data = readtable(file, header = true)
+    data = CSV.read(file, header = 1)
   else
     error("SMARTS DATA file not found at: $file")
   end
 
   # Extract SMARTS Data from file
-  timeSMARTSfile = data[:,1] # time in hours
-  fluxSMARTSfile = data[:,3] # total solar flux
-  azimuthSMARTSfile = data[:,9]*pi/180 # azimuth angle of solar flux
-  zenithSMARTSfile = data[:,10]*pi/180 # zenith angle of solar flux
+  time = data[:,1] # time in hours
+  flux = data[:,3] # total solar flux
+  azimuth = data[:,9]*pi/180 # azimuth angle of solar flux
+  zenith = data[:,10]*pi/180 # zenith angle of solar flux
 
-	global SMARTSdata = sunshine(time,azimuth,zenith,flux)
-  return SMARTSdata
+	return sunshine(time,azimuth,zenith,flux)
+end
+
+"""
+    interpolatesunshine(solardata::sunshine,time::Array{Float64,1})
+Interpolates solardata struct data to fit a new array of time values.
+"""
+function interpolatesunshine(solardata::sunshine,time::Array{Float64,1})
+  azimuthitp = interpolate((solardata.time,),solardata.azimuth,Gridded(Linear()))
+  zenithitp = interpolate((solardata.time,),solardata.zenith,Gridded(Linear()))
+	fluxitp = interpolate((solardata.time,),solardata.flux,Gridded(Linear()))
+	return sunshine(time,azimuthitp[time],zenithitp[time],fluxitp[time])
 end
