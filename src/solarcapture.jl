@@ -62,3 +62,25 @@ function solarcapturesimple(sunshine, trajectory, solarpanels)
 	return panelenergy(panelflux,panelpower,paneltotalenergy)
 
 end #solarcapturesimple()
+
+"""
+    getsolardata(file::String)
+Reads SMARTS data from a file and stores the data as a global sunshine type
+named SMARTSdata.
+"""
+function getsolardata(file::String)
+  if isfile(file)
+    data = readtable(file, header = true)
+  else
+    error("SMARTS DATA file not found at: $file")
+  end
+
+  # Extract SMARTS Data from file
+  timeSMARTSfile = data[:,1] # time in hours
+  fluxSMARTSfile = data[:,3] # total solar flux
+  azimuthSMARTSfile = data[:,9]*pi/180 # azimuth angle of solar flux
+  zenithSMARTSfile = data[:,10]*pi/180 # zenith angle of solar flux
+
+	global SMARTSdata = sunshine(time,azimuth,zenith,flux)
+  return SMARTSdata
+end
