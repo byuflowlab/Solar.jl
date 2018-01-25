@@ -1,3 +1,15 @@
+# ----- Trajectory Types ------ #
+"""
+   aircrafttrajectory
+
+Holds aircraft orientation information for each time step
+"""
+struct aircrafttrajectory
+	roll::Array{Float64,1}
+	pitch::Array{Float64,1}
+	yaw::Array{Float64,1}
+end
+
 # ----- Solar Panel Types ----- #
 "
 	panelgeometry
@@ -5,23 +17,23 @@
 Describe the geometry/orientation of a solar panel array.
 "
 struct panelgeometry
-	normal::Array{Float32,1}(3)
-	chord::Float32
-	span::Float32
-	area::Float32
-	roll::Float32
-	pitch::Float32
-	yaw::Float32
+	normal::Array{Float64,1}
+	chord::Float64
+	span::Float64
+	area::Float64
+	roll::Float64
+	pitch::Float64
+	yaw::Float64
 end
 
 """
-	panelgeometryautodef(;chord = 1.0, span = 1.0, roll = 0.0, pitch = 0.0, yaw = 0.0))
+	panelgeometry(;chord = 1.0, span = 1.0, roll = 0.0, pitch = 0.0, yaw = 0.0))
 
 Define the panelgeometry immutable type; calculate and fill in the area and normal fields from the required inputs for the user.
 
 See documentation for the panelgeometry immutable type for information on inputs.
 """
-function panelgeometryautodef( #TODO find dimensions of single solar cell and put those as defaults
+function panelgeometry( #TODO find dimensions of single solar cell and put those as defaults
 	chord = 1.0,
 	span  = 1.0,
 	roll  = 0.0,
@@ -62,9 +74,9 @@ end #panelphysicsin
 Define flux, power, and total energy arrays for a solar panel network.
 """
 struct panelenergy
-	flux::Array{Float32,2}
-	power::Array{Float32,2}
-	totalenergy::Array{Float32,2}
+	flux::Array{Float64,2}
+	power::Array{Float64,2}
+	totalenergy::Array{Float64,2}
 end #panelphysicsout
 
 # ----- Sunshine Types ----- #
@@ -74,8 +86,8 @@ end #panelphysicsout
 Define time, sun angles (azimuth, zenith), and solar flux arrays.
 """
 struct sunshine
-	time::Array{Float32,1}
-	azimuth::Array{Float32,1}
-	zenith::Array{Float32,1}
-	flux::Array{Float32,1}
+	time::Array{Float64,1}
+	azimuth::Array{Float64,1}
+	zenith::Array{Float64,1}
+	flux::Array{Float64,1}
 end
