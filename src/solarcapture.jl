@@ -8,9 +8,9 @@ function solarcapturesimple(solardata::sunshine,trajectory::aircrafttrajectory,
     solarpanels::Array{panelgeometry,1},etasolar::Float64)
 
     #initialize
-    panelflux = Array{Float64,2}(length(solarpanels),length(solardata.time))
-    panelpower = Array{Float64,2}(length(solarpanels),length(solardata.time))
-    paneltotalenergy = Array{Float64,2}(length(solarpanels),length(solardata.time))
+    panelflux = Array{Float64,2}(length(solardata.time)-1,length(solarpanels))
+    panelpower = Array{Float64,2}(length(solardata.time)-1,length(solarpanels))
+    paneltotalenergy = Array{Float64,2}(length(solardata.time)-1,length(solarpanels))
 
     for i=1:length(solardata.time)-1
 
@@ -26,21 +26,21 @@ function solarcapturesimple(solardata::sunshine,trajectory::aircrafttrajectory,
         sunvector = [u,v,w]
         # ---
 
+        # --- Adjust panel normal by aircraft orientation --- #
+        # complete trig calculations for brevity
+        cphi = cos(-trajectory.roll[i])
+        cth = cos(-trajectory.pitch[i])
+        cpsi = cos(trajectory.yaw[i])
+        sphi = sin(-trajectory.roll[i])
+        sth = sin(-trajectory.pitch[i])
+        spsi = sin(trajectory.yaw[i])
+
+        # 3D Rotation Matrix
+        R = [cth*cpsi -cphi*spsi+sphi*sth*cpsi   sphi*spsi+cphi*sth*cpsi;
+               cth*spsi  cphi*cpsi+sphi*sth*spsi  -sphi*cpsi+cphi*sth*spsi;
+              -sth          sphi*cth                          cphi*cth               ]
+
         for j=1:length(solarpanels)
-
-            # --- Adjust panel normal by aircraft orientation --- #
-            # complete trig calculations for brevity
-            cphi = cos(-trajectory.roll[i])
-            cth = cos(-trajectory.pitch[i])
-            cpsi = cos(trajectory.yaw[i])
-            sphi = sin(-trajectory.roll[i])
-            sth = sin(-trajectory.pitch[i])
-            spsi = sin(trajectory.yaw[i])
-
-            # 3D Rotation Matrix
-            R = [cth*cpsi -cphi*spsi+sphi*sth*cpsi   sphi*spsi+cphi*sth*cpsi;
-                   cth*spsi  cphi*cpsi+sphi*sth*spsi  -sphi*cpsi+cphi*sth*spsi;
-                  -sth          sphi*cth                          cphi*cth               ]
 
             panelnormal = R*solarpanels[j].normal
 
@@ -51,12 +51,12 @@ function solarcapturesimple(solardata::sunshine,trajectory::aircrafttrajectory,
             end
 
             # --- Calculate Flux, Power, and Total Energy --- #
-            panelflux[j,i] = solardata.flux[i].*mu
+            panelflux[i,j] = solardata.flux[i].*mu
 
-            panelpower[j,i] = etasolar*solarpanels[j].area*panelflux[j,i]
+            panelpower[i,j] = etasolar*solarpanels[j].area*panelflux[i,j]
 
-            paneltotalenergy[j,i] = panelpower[j,i]*(solardata.time[i+1]-solardata.time[i])
-
+            paneltotalenergy[i,j] = panelpower[i,j]*(solardata.time[i+1]-solardata.time[i])
+            # println(j,"\t",i)
         end #for number of panels
     end #for all solardata.time
 
