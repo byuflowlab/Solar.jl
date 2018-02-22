@@ -1,16 +1,16 @@
 """
     solarcapturesimple(solardata::sunshine, trajectory::aircrafttrajectory,
-      solarpanels::panelgeometry,etasolar::Float64)
+      solarpanels::panelgeometry,etasolar::Real)
 
 Calculate the flux, power, and total energy for all input panels for all input time.
 """
 function solarcapturesimple(solardata::sunshine,trajectory::aircrafttrajectory,
-    solarpanels::Array{panelgeometry,1},etasolar::Float64)
+    solarpanels::Array{panelgeometry,1},etasolar::Real)
 
     #initialize
-    panelflux = Array{Float64,2}(length(solardata.time)-1,length(solarpanels))
-    panelpower = Array{Float64,2}(length(solardata.time)-1,length(solarpanels))
-    paneltotalenergy = Array{Float64,2}(length(solardata.time)-1,length(solarpanels))
+    panelflux = Array{Real,2}(length(solardata.time)-1,length(solarpanels))
+    panelpower = Array{Real,2}(length(solardata.time)-1,length(solarpanels))
+    paneltotalenergy = Array{Real,2}(length(solardata.time)-1,length(solarpanels))
 
     for i=1:length(solardata.time)-1
 
@@ -85,10 +85,10 @@ function getsunshine(file::String)
 end
 
 """
-    interpolatesunshine(solardata::sunshine,time::Array{Float64,1})
+    interpolatesunshine(solardata::sunshine,time::Array{Real,1})
 Interpolates solardata struct data to fit a new array of time values.
 """
-function interpolatesunshine(solardata::sunshine,time::Array{Float64,1})
+function interpolatesunshine(solardata::sunshine,time::Array{Real,1})
   azimuthitp = interpolate((solardata.time,),solardata.azimuth,Gridded(Linear()))
   zenithitp = interpolate((solardata.time,),solardata.zenith,Gridded(Linear()))
     fluxitp = interpolate((solardata.time,),solardata.flux,Gridded(Linear()))
