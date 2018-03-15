@@ -85,7 +85,7 @@ end #panelphysicsout
 
 Define time, sun angles (azimuth, zenith), and solar flux arrays.
 """
-struct sunshine4
+struct sunshine
     time::Array{T,1} where T<:Real
     azimuth::Array{T,1} where T<:Real
     zenith::Array{T,1} where T<:Real
