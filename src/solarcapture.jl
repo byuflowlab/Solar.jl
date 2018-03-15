@@ -8,9 +8,9 @@ function solarcapturesimple(solardata::sunshine,trajectory::aircrafttrajectory,
     solarpanels::Array{panelgeometry,1},etasolar::Real)
 
     #initialize
-    panelflux = Array{Real,2}(length(solardata.time)-1,length(solarpanels))
-    panelpower = Array{Real,2}(length(solardata.time)-1,length(solarpanels))
-    paneltotalenergy = Array{Real,2}(length(solardata.time)-1,length(solarpanels))
+    panelflux = Array{Float64,2}(length(solardata.time)-1,length(solarpanels))
+    panelpower = Array{Float64,2}(length(solardata.time)-1,length(solarpanels))
+    paneltotalenergy = Array{Float64,2}(length(solardata.time)-1,length(solarpanels))
 
     for i=1:length(solardata.time)-1
 
@@ -23,7 +23,7 @@ function solarcapturesimple(solardata::sunshine,trajectory::aircrafttrajectory,
         v = sin(A).*sin(Z)
         w = cos(Z)
 
-        sunvector = [u,v,w]
+        sunvector = vcat(u,v,w)
         # ---
 
         # --- Adjust panel normal by aircraft orientation --- #
