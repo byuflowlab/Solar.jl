@@ -85,10 +85,10 @@ function getsunshine(file::String)
 end
 
 """
-    interpolatesunshine(solardata::sunshine,time::Array{Real,1})
+    interpolatesunshine(solardata::sunshine,time::Array{<:Real,1})
 Interpolates solardata struct data to fit a new array of time values.
 """
-function interpolatesunshine(solardata::sunshine,time::Array{Real,1})
+function interpolatesunshine(solardata::sunshine,time::Array{<:Real,1})
   azimuthitp = interpolate((solardata.time,),solardata.azimuth,Gridded(Linear()))
   zenithitp = interpolate((solardata.time,),solardata.zenith,Gridded(Linear()))
     fluxitp = interpolate((solardata.time,),solardata.flux,Gridded(Linear()))

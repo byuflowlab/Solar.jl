@@ -4,10 +4,10 @@
 
 Holds aircraft orientation information for each time step
 """
-struct aircrafttrajectory
-    roll::Array{T,1} where T<:Real
-    pitch::Array{T,1} where T<:Real
-    yaw::Array{T,1} where T<:Real
+struct aircrafttrajectory{R<:Real}
+    roll::Array{R,1}
+    pitch::Array{R,1}
+    yaw::Array{R,1}
 end
 
 # ----- Solar Panel Types ----- #
@@ -16,14 +16,14 @@ end
 
 Describe the geometry/orientation of a solar panel array.
 "
-struct panelgeometry
-    normal::Array{T,1} where T<:Real
-    chord::T where T<:Real
-    span::T where T<:Real
-    area::T where T<:Real
-    roll::T where T<:Real
-    pitch::T where T<:Real
-    yaw::T where T<:Real
+struct panelgeometry{R<:Real}
+    normal::Array{R,1}
+    chord::R
+    span::R
+    area::R
+    roll::R
+    pitch::R
+    yaw::R
 end
 
 """
@@ -73,10 +73,10 @@ end #panelphysicsin
 
 Define flux, power, and total energy arrays for a solar panel network.
 """
-struct panelenergy
-    flux::Array{T,2} where T<:Real
-    power::Array{T,2} where T<:Real
-    totalenergy::Array{T,2} where T<:Real
+struct panelenergy{R<:Real}
+    flux::Array{R,2}
+    power::Array{R,2}
+    totalenergy::Array{R,2}
 end #panelphysicsout
 
 # ----- Sunshine Types ----- #
@@ -85,9 +85,9 @@ end #panelphysicsout
 
 Define time, sun angles (azimuth, zenith), and solar flux arrays.
 """
-struct sunshine
-    time::Array{T,1} where T<:Real
-    azimuth::Array{T,1} where T<:Real
-    zenith::Array{T,1} where T<:Real
-    flux::Array{T,1} where T<:Real
+struct sunshine{R<:Real}
+    time::Array{R,1}
+    azimuth::Array{R,1}
+    zenith::Array{R,1}
+    flux::Array{R,1}
 end
