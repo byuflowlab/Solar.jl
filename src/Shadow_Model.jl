@@ -1,13 +1,12 @@
-using ArrayFire
-function Shadow_Model(Mesh,Conditions)
-    Precision=Mesh[:precision]
-    for i=1:length(Conditions[:flux])
+function Shadow_Model(Mesh,sunconditions,planeconditions)
+    Precision=Mesh.precision
+    for i=1:length(sunconditions.flux)
         #Load all input angles
-        zenith=-Conditions[:zenith][i]
-        azimuth=Conditions[:azimuth][i]
-        ψ=Conditions[:ψ][i]*180/pi
-        α=-Conditions[:α][i]*180/pi
-        ϕ=Conditions[:ϕ][i]*180/pi
+        zenith=-sunconditions.zenith[i]
+        azimuth=sunconditions.azimuth[i]
+        ψ=planeconditions.yaw[i]*180/pi
+        α=-planeconditions.roll[i]*180/pi
+        ϕ=planeconditions.pitch[i]*180/pi
 
         #Calculate rotation matrices about each asxis
         Rz=[cosd(ψ) -sind(ψ) 0;
@@ -27,10 +26,10 @@ function Shadow_Model(Mesh,Conditions)
                0              1             0           ;
               -sind(zenith)   0             cosd(zenith)]
 
-        Data=Array{Float32}(9,length(Mesh[:x]))
+        Data=Array{Float32}(9,length(Mesh.x))
 
-        Rotated_Coordinates=transpose(round.(([Mesh[:x][:] Mesh[:y][:] Mesh[:z][:]]*Rz*Ry*Rx*Rzsun*Rysun)/Precision))
-        Rotated_Normals=transpose([Mesh[:normal][:i][:] Mesh[:normal][:j][:] Mesh[:normal][:k][:]]*Rzsun*Rysun*Rx*Ry*Rz)
+        Rotated_Coordinates=transpose(round.(([Mesh.x[:] Mesh.y[:] Mesh.z[:]]*Rz*Ry*Rx*Rzsun*Rysun)/Precision))
+        Rotated_Normals=transpose([Mesh.i[:] Mesh.j[:] Mesh.k[:]]*Rzsun*Rysun*Rx*Ry*Rz)
 
         Data[1,:]=Rotated_Coordinates[1,:]
         Data[2,:]=Rotated_Coordinates[2,:]
@@ -38,8 +37,8 @@ function Shadow_Model(Mesh,Conditions)
         Data[4,:]=Rotated_Normals[1,:]
         Data[5,:]=Rotated_Normals[2,:]
         Data[6,:]=Rotated_Normals[3,:]
-        Data[7,:]=Mesh[:area]
-        Data[8,:]=Mesh[:panel]
+        Data[7,:]=Mesh.area
+        Data[8,:]=Mesh.paneled
 
         Atup = reinterpret(NTuple{3, Float64}, Rotated_Coordinates, (size(Rotated_Coordinates, 2),));
         algorithim=sortperm(Atup; alg=QuickSort, by=x->(x[2],x[3],x[1]),rev=true)
@@ -71,19 +70,22 @@ function Shadow_Model(Mesh,Conditions)
                     if percent_perpendicular<0
                         #print("Error")
                     else
-                        flux+=percent_perpendicular*Conditions[:flux][i]
+                        flux+=percent_perpendicular*sunconditions.flux[i]
                     end
                 end
             end
         end
         print("Paneled Area=$paneled_area m^2\nPaneled Area Lit=$paneled_area_lit m^2\nFlux=$flux W\n")
 
-        Dummy=Dict()
-        Dummy[:x]=Data[1,:]*Precision
-        Dummy[:y]=Data[2,:]*Precision
-        Dummy[:z]=Data[3,:]*Precision
-        Dummy[:panel]=Data[8,:]
-        Dummy[:lit]=Data[9,:]
-        return (Dummy)
+        xs=Data[1,:]*Precision
+        ys=Data[2,:]*Precision
+        zs=Data[3,:]*Precision
+        is=Data[4,:]
+        js=Data[5,:]
+        ks=Data[6,:]
+        areas=Data[7,:]
+        panelinfo=Data[8,:]
+        litinfo=Data[9,:]
+        return (surfacemesh(xs,ys,zs,is,js,ks,areas,panelinfo,Precision,litinfo))
     end
 end

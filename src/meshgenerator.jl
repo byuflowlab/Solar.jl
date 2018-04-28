@@ -1,4 +1,4 @@
-function surface_generator(aircraft,PAR) #A function that accepts aircraft geometry as an input and outputs points to approximate the plane surfaces
+function surface_generator(aircraft,max_seperation=.01) #A function that accepts aircraft geometry as an input and outputs points to approximate the plane surfaces
 
   #Initialze the output
   meshx=Array{Float64,1}(0)
@@ -27,7 +27,7 @@ function surface_generator(aircraft,PAR) #A function that accepts aircraft geome
       for j=2:length(aircraft.components[i].chord)#Reads through each wing cross section
         first_foil=start_foil#Sets the first foil of the subsection
         section_width=sqrt((aircraft.components[i].LEx[j]-aircraft.components[i].LEx[j-1])^2+(aircraft.components[i].LEy[j]-aircraft.components[i].LEy[j-1])^2+(aircraft.components[i].LEz[j]-aircraft.components[i].LEz[j-1])^2)
-        n=round(section_width/PAR[:max_seperation]+.5)
+        n=round(section_width/max_seperation+.5)
         end_foil=foil_generator(aircraft.components[i].foil[j],aircraft.components[i].chord[j],aircraft.components[i].dihedral[j-1],aircraft.components[i].twist[j],aircraft.components[i].LEx[j],aircraft.components[i].LEy[j],aircraft.components[i].LEz[j])
         for k=1:n#Cycles through a number of subsections equal to n
           #Intitializes coordinate arrays
@@ -159,7 +159,7 @@ function surface_generator(aircraft,PAR) #A function that accepts aircraft geome
       end
       start_section=[x,y,z]
 
-      n=round(aircraft.components[i].noselength/PAR[:max_seperation]+.5)
+      n=round(aircraft.components[i].noselength/max_seperation+.5)
       first_section=start_section#Sets first subsection
       for j=1:n-1#Calculate nosecone sections (tip calculated sperately to avoid convergence issues)
         #Intitializes coordinate arrays
@@ -267,7 +267,7 @@ function surface_generator(aircraft,PAR) #A function that accepts aircraft geome
         end
         end_section=[x,y,z]
 
-        n=round((aircraft.components[i].sectioncentersx[j]-aircraft.components[i].sectioncentersx[j-1])/PAR[:max_seperation]+.5)
+        n=round((aircraft.components[i].sectioncentersx[j]-aircraft.components[i].sectioncentersx[j-1])/max_seperation+.5)
         for k=1:n
           #Intitializes coordinate arrays
           x=Array{Float32}(0)
@@ -339,7 +339,7 @@ function surface_generator(aircraft,PAR) #A function that accepts aircraft geome
       end
 
       #Generate hemisphere at end of fuselage
-      n=round(aircraft.components[i].sectionradii[length(aircraft.components[i].sectionradii)]/PAR[:max_seperation]+.5)
+      n=round(aircraft.components[i].sectionradii[length(aircraft.components[i].sectionradii)]/max_seperation+.5)
       for j=1:n-1#Calculate nosecone sections (tip calculated sperately to avoid convergence issues)
         #Intitializes coordinate arrays
         x=Array{Float32}(0)
@@ -433,7 +433,7 @@ function surface_generator(aircraft,PAR) #A function that accepts aircraft geome
   end
   maxarea=maximum(mesharea)*10^4#Finds the maximum area represented by a single point
   print("Largest Area=$maxarea cm^2\n")#Displays maximum area and maximum distance
-  return (surfacemesh(meshx,meshy,meshz,meshi,meshj,meshk,mesharea,meshpaneled,distance))#Returns dictionary
+  return (surfacemesh(meshx,meshy,meshz,meshi,meshj,meshk,mesharea,meshpaneled,distance,trues(length(meshx))))#Returns dictionary
 end
 
 function foil_generator(foil,chord,dihedral,twist,LEx,LEy,LEz)#A function that generates a foil cross section based on the information provided
@@ -505,26 +505,26 @@ function visualize(airplane) #Simple visualizer function
   shadedy=Array{Float32}(0)
   shadedz=Array{Float32}(0)
 
-  for i=1:length(airplane[:x])
-      if airplane[:panel][i]==true&&airplane[:lit][i]==true
-          push!(paneledx,airplane[:x][i])
-          push!(paneledy,airplane[:y][i])
-          push!(paneledz,airplane[:z][i])
+  for i=1:length(airplane.x)
+      if airplane.paneled[i]==true&&airplane.lit[i]==true
+          push!(paneledx,airplane.x[i])
+          push!(paneledy,airplane.y[i])
+          push!(paneledz,airplane.z[i])
       elseif airplane[:lit][i]==false
-          push!(shadedx,airplane[:x][i])
-          push!(shadedy,airplane[:y][i])
-          push!(shadedz,airplane[:z][i])
+          push!(shadedx,airplane.x[i])
+          push!(shadedy,airplane.y[i])
+          push!(shadedz,airplane.z[i])
       else
-          push!(unpaneledx,airplane[:x][i])
-          push!(unpaneledy,airplane[:y][i])
-          push!(unpaneledz,airplane[:z][i])
+          push!(unpaneledx,airplane.x[i])
+          push!(unpaneledy,airplane.y[i])
+          push!(unpaneledz,airplane.z[i])
       end
   end
   plot3D(shadedx,shadedy,shadedz,",",markersize=1,color="black")
   plot3D(unpaneledx,unpaneledy,unpaneledz,",",markersize=1,color="gray" )
   plot3D(paneledx,paneledy,paneledz,",",markersize=1,color=Myblue )
   #plot3D(airplane[:x],airplane[:y],airplane[:z],",",markersize=.0001,color=Myblue )
-  limit=maximum(airplane[:y])*.575#.575 is an experimentally determined scalar meant to increase figure size.
+  limit=maximum(airplane.y)*.575#.575 is an experimentally determined scalar meant to increase figure size.
   ax=gca()
   ax[:set_ylim]([-limit,limit])
   ax[:set_zlim]([-limit,limit])
