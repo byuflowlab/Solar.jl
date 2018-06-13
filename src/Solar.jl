@@ -6,6 +6,8 @@ Defines type: panel, includes various methods for solar flux calculation.
 """
 module Solar
 
+__precompile__()
+
 using Interpolations
 import CSV
 
