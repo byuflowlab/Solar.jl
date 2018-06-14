@@ -37,8 +37,8 @@ function solarcapturesimple(solardata::sunshine,trajectory::aircrafttrajectory,
 
         # 3D Rotation Matrix
         R = [cth*cpsi -cphi*spsi+sphi*sth*cpsi   sphi*spsi+cphi*sth*cpsi;
-               cth*spsi  cphi*cpsi+sphi*sth*spsi  -sphi*cpsi+cphi*sth*spsi;
-              -sth          sphi*cth                          cphi*cth               ]
+             cth*spsi  cphi*cpsi+sphi*sth*spsi  -sphi*cpsi+cphi*sth*spsi;
+            -sth            sphi*cth                            cphi*cth               ]
 
         for j=1:length(solarpanels)
 
