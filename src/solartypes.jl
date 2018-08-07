@@ -5,6 +5,7 @@
 Holds aircraft orientation information for each time step
 """
 struct aircrafttrajectory
+    time::Array{Float64,1}
     roll::Array{Float64,1}
     pitch::Array{Float64,1}
     yaw::Array{Float64,1}
