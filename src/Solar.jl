@@ -8,6 +8,7 @@ module Solar
 
 __precompile__()
 
+using GeometricalPredicates
 using Interpolations
 import CSV
 
