@@ -9,9 +9,9 @@ function solarcapturesimple(solardata::sunshine, trajectory::aircrafttrajectory,
     solarpanels::Array{panelgeometry,1}, etasolar::Real)
 
     #initialize
-    flux = Array{Float64,2}(length(solardata.time)-1, length(solarpanels))
-    power = Array{Float64,2}(length(solardata.time)-1, length(solarpanels))
-    energy = Array{Float64,2}(length(solardata.time)-1, length(solarpanels))
+    flux = Array{Float64,2}(undef, length(solardata.time)-1, length(solarpanels))
+    power = Array{Float64,2}(undef, length(solardata.time)-1, length(solarpanels))
+    energy = Array{Float64,2}(undef, length(solardata.time)-1, length(solarpanels))
 
     for i=1:length(solardata.time)-1
 
@@ -72,11 +72,11 @@ function rectanglemesh(crosssections::Array{Float64,3})
     npanels = (size(crosssections,1)-1)*(size(crosssections,2)-1)
 
     # prepare solar panel output
-    solarpanels = Array{panelgeometry,1}(npanels)
+    solarpanels = Array{panelgeometry,1}(undef, npanels)
 
     # prepare vtk output
     points = reshape(crosssections, div(length(crosssections),3), 3)
-    cells = Array{Array{Int64,1},1}(npanels)
+    cells = Array{Array{Int64,1},1}(undef, npanels)
 
     # use cross product to find panel area and normal vector
     for i = 1:size(crosssections,1)-1 # loop over sections
@@ -85,10 +85,10 @@ function rectanglemesh(crosssections::Array{Float64,3})
             idx = (size(crosssections,2)-1)*(i-1)+j
             # define rectangular cell
             cells[idx] =
-                [sub2ind(crosssections, i, j, 1),
-                 sub2ind(crosssections, i+1, j, 1),
-                 sub2ind(crosssections, i+1, j+1, 1),
-                 sub2ind(crosssections, i, j+1, 1)]
+                [LinearIndices(crosssections)[i,   j,   1],
+                 LinearIndices(crosssections)[i+1, j,   1],
+                 LinearIndices(crosssections)[i+1, j+1, 1],
+                 LinearIndices(crosssections)[i,   j+1, 1]]
             panelnodes = [crosssections[i,j,:], crosssections[i+1,j,:],
                 crosssections[i+1,j+1,:], crosssections[i,j+1,:]]
             # use two triangles to get area and normal
@@ -141,7 +141,7 @@ function solarcapture(solardata::sunshine, trajectory::aircrafttrajectory,
 
     # apply shadow
     shadowed = deepcopy(unshadowed)
-    idxshadow = find(shadow)
+    idxshadow = LinearIndices(shadow)[findall(shadow)]
     shadowed.shadow[idxshadow] .= true
     shadowed.flux[idxshadow] .= 0.0
     shadowed.power[idxshadow] .= 0.0
@@ -194,12 +194,12 @@ function getshadowed!(shadow::AbstractArray{Bool,1}, roll::Real, pitch::Real, ya
     TR = T*R
 
     # apply rotation and transformation to panels
-    sundistance = Array{Float64,1}(npanels)
-    panelcentroids2D = Array{Array{Float64,1},1}(npanels)
-    panelnodes2D = Array{Array{Array{Float64,1},1},1}(npanels)
+    sundistance = Array{Float64,1}(undef, npanels)
+    panelcentroids2D = Array{Array{Float64,1},1}(undef, npanels)
+    panelnodes2D = Array{Array{Array{Float64,1},1},1}(undef, npanels)
     @inbounds for i in eachindex(solarpanels)
         # transform panel coordinates
-        panelnodes2D[i] = Array{Array{Float64,1},1}(length(solarpanels[i].nodes))
+        panelnodes2D[i] = Array{Array{Float64,1},1}(undef, length(solarpanels[i].nodes))
         for j in eachindex(solarpanels[i].nodes)
             # extract 2D information, discard distance to sun
             panelnodes2D[i][j] = TR[2:3,1:3]*solarpanels[i].nodes[j]
@@ -234,9 +234,9 @@ function getshadowed!(shadow::AbstractArray{Bool,1}, roll::Real, pitch::Real, ya
     end
 
     # assemble 2D panels as viewed from the sun
-    panels2D = Array{GeometricalPredicates.Polygon2D{GeometricalPredicates.Point2D},1}(npanels)
+    panels2D = Array{GeometricalPredicates.Polygon2D{GeometricalPredicates.Point2D},1}(undef, npanels)
     @inbounds for i in eachindex(panelnodes2D)
-        points2D = Array{GeometricalPredicates.Point2D,1}(length(panelnodes2D[i]))
+        points2D = Array{GeometricalPredicates.Point2D,1}(undef, length(panelnodes2D[i]))
         for j in eachindex(points2D)
             points2D[j] = Point(panelnodes2D[i][j][1], panelnodes2D[i][j][2])
         end

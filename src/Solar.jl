@@ -10,6 +10,8 @@ __precompile__()
 
 using GeometricalPredicates
 using Interpolations
+using LinearAlgebra
+using Statistics
 import CSV
 
 include("solartypes.jl")

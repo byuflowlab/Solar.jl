@@ -1,5 +1,5 @@
 import CSV
-import VTKtools
+import GeometricTools
 import Solar
 using Interpolations
 
@@ -35,7 +35,7 @@ dihedral = vcat(fill(0.0, npanel), 80.0, 80.0, 80.0)
 chord = vcat(2.0, fill(1.4, npanel), 1.0, 0.8, 0.5)
 sweep = fill(20.0*pi/180, length(chord)-1)
 
-t = vcat(0.0, 0.03, linspace(0.03, 1.0, npanel)[2:end], 1.03, 1.04, 1.05)
+t = vcat(0.0, 0.03, range(0.03, stop = 1.0, length = npanel)[2:end], 1.03, 1.04, 1.05)
 xyz = zeros(Float64,length(t),3)
 for i = 2:length(t)
     dt = t[i]-t[i-1]
@@ -46,9 +46,9 @@ for i = 2:length(t)
     dx *= dt/ds
     dy *= dt/ds
     dz *= dt/ds
-    xyz[i:end,1] += dx
-    xyz[i:end,2] += dy
-    xyz[i:end,3] += dz
+    xyz[i:end,1] .+= dx
+    xyz[i:end,2] .+= dy
+    xyz[i:end,3] .+= dz
 end
 xyz *= b/xyz[end,2]
 
@@ -79,17 +79,17 @@ for (i,airfoil_file) in enumerate(airfoil_files)
     y = out[:,2]
 
     # Separate upper and lower sides to make the contour injective in x
-    leidx = indmin(x)
+    leidx = argmin(x)
     upper = [x[leidx:-1:1], y[leidx:-1:1]]
     lower = [x[leidx:end], y[leidx:end]]
 
     # Parameterize both sides independently
-    fun_upper = VTKtools.parameterize(upper[1], upper[2], zeros(upper[1]); inj_var=1)
-    fun_lower = VTKtools.parameterize(lower[1], lower[2], zeros(lower[1]); inj_var=1)
+    fun_upper = GeometricTools.parameterize(upper[1], upper[2], zeros(Float64, length(upper[1])); inj_var=1)
+    fun_lower = GeometricTools.parameterize(lower[1], lower[2], zeros(Float64, length(lower[1])); inj_var=1)
 
     # New discretization for both surfaces
-    upper_points = VTKtools.discretize(fun_upper, 0, 1, n_upper, r[1]; central=true)
-    lower_points = VTKtools.discretize(fun_lower, 0, 1, n_lower, r[1]; central=true)
+    upper_points = GeometricTools.discretize(fun_upper, 0, 1, n_upper, r[1]; central=true)
+    lower_points = GeometricTools.discretize(fun_lower, 0, 1, n_lower, r[1]; central=true)
 
     # Put both surfaces back together from TE over the top and from LE over the bottom.
     reverse!(upper_points)                       # Trailing edge over the top
@@ -107,9 +107,9 @@ for (i,airfoil_file) in enumerate(airfoil_files)
     airfoil = Array{Float64, 1}[[new_x[j], new_y[j], 0] for j in 1:npoints]
 
     # Positions the airfoil along the blade in the right orientation
-    Oaxis = VTKtools.rotation_matrix(orien[i][1], orien[i][2], orien[i][3])
+    Oaxis = GeometricTools.rotation_matrix(orien[i][1], orien[i][2], orien[i][3])
     invOaxis = inv(Oaxis)
-    airfoil = VTKtools.countertransform(airfoil, invOaxis, Os[i])
+    airfoil = GeometricTools.countertransform(airfoil, invOaxis, Os[i])
 
     push!(crosssections, airfoil)
 end
@@ -128,12 +128,10 @@ geometry[:,:,3] = -geometry[:,:,3]
 # get solar panels
 points, cells, solarpanels = Solar.rectanglemesh(geometry)
 vtk_points = [points[i,:] for i = 1:size(points,1)]
-vtk_cells = [cells[i]-1 for i = 1:length(cells)]
+vtk_cells = [cells[i].-1 for i = 1:length(cells)]
 
 # get solar capture
-tic()
 shadowed, unshadowed = Solar.solarcapture(solar, trajectory, solarpanels, 0.25)
-toc()
 #
 # # output VTK files
 # if !ispath("out")
@@ -188,5 +186,5 @@ toc()
 #              )
 #     )
 #     # Generates the VTK file
-#     VTKtools.generateVTK("out/solar$i", vtk_points; cells=vtk_cells, cell_data = data)
+#     GeometricTools.generateVTK("out/solar$i", vtk_points; cells=vtk_cells, cell_data = data)
 #  end
