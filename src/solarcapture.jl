@@ -266,5 +266,5 @@ function interpolatesunshine(time::AbstractArray{<:Real,1}, solardata::sunshine)
     azimuthitp = interpolate((solardata.time,),solardata.azimuth,Gridded(Linear()))
     zenithitp = interpolate((solardata.time,),solardata.zenith,Gridded(Linear()))
     fluxitp = interpolate((solardata.time,),solardata.flux,Gridded(Linear()))
-    return sunshine(time,azimuthitp[time],zenithitp[time],fluxitp[time])
+    return sunshine(time,azimuthitp(time),zenithitp(time),fluxitp(time))
 end
