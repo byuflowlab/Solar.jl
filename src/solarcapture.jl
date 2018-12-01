@@ -9,12 +9,12 @@ function solarcapturesimple(solardata::sunshine, trajectory::aircrafttrajectory,
     solarpanels::Array{panelgeometry,1}, etasolar::Real)
 
     #initialize
-    flux = Array{Float64,2}(undef, length(solardata.time)-1, length(solarpanels))
-    power = Array{Float64,2}(undef, length(solardata.time)-1, length(solarpanels))
-    energy = Array{Float64,2}(undef, length(solardata.time)-1, length(solarpanels))
+    ntime = length(solardata.time)
+    npanels = length(solarpanels)
+    flux = Array{Float64,2}(undef, ntime, npanels)
+    power = Array{Float64,2}(undef, ntime, npanels)
 
-    for i=1:length(solardata.time)-1
-
+    for i=1:ntime
         # --- Normalized Solar Vector --- #
         A = solardata.azimuth[i]
         Z = solardata.zenith[i]
@@ -35,7 +35,7 @@ function solarcapturesimple(solardata::sunshine, trajectory::aircrafttrajectory,
             -sth            sphi*cth                            cphi*cth]
 
         # --- Find flux on each panel
-        for j=1:length(solarpanels)
+        for j=1:npanels
 
             # rotate panel normal with aircraft
             panelnormal = R*solarpanels[j].normal
@@ -49,11 +49,29 @@ function solarcapturesimple(solardata::sunshine, trajectory::aircrafttrajectory,
             # flux, power, and total energy
             flux[i,j] = solardata.flux[i].*mu
             power[i,j] = etasolar*solarpanels[j].area*flux[i,j]
-            energy[i,j] = power[i,j]*(solardata.time[i+1]-solardata.time[i])
         end
     end
+
+    energy = Array{Float64,1}(undef, npanels)
+    for j = 1:npanels
+        energy[j] = trapz(solardata.time, power[:,j])
+    end
+
     return panelenergy(flux, power, energy)
 end #solarcapturesimple()
+
+function trapz(x::AbstractArray{<:Real,1}, y::AbstractArray{<:Real,1})
+    n = length(x)
+    # initialize output
+    r = zero(zero(Tx) + zero(Ty))
+    # if single element return zero
+    if n == 1; return r; end
+    # perform integration
+    for i in 2:n
+        r += (x[i] - x[i-1]) * (y[i] + y[i-1])
+    end
+    return r/2
+end
 
 """
     rectanglemesh(crosssections::Array{Float64,3})

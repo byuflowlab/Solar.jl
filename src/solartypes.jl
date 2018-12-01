@@ -25,8 +25,8 @@ struct panelgeometry
 end
 
 function panelgeometry(area, normal)
-    nodes = Array{Array{Float64,1},1}(0)
-    centroid = Array{Float64,1}(0)
+    nodes = Array{Array{Float64,1},1}(undef, 0)
+    centroid = Array{Float64,1}(undef, 0)
     panelgeometry(nodes, centroid, area, normal)
 end
 
